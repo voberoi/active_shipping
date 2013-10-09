@@ -108,6 +108,14 @@ class FedExTest < MiniTest::Unit::TestCase
     assert_equal 'CA', result.destination.state
   end
 
+  def test_find_tracking_info_should_gracefully_handle_missing_destination_information
+    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response_no_destination'))
+    result = @carrier.find_tracking_info('077973360403984')
+    assert_equal 'unknown', result.destination.city.downcase
+    assert_equal 'unknown', result.destination.state
+    assert_equal 'ZZ', result.destination.country.code(:alpha2).to_s
+  end
+
   def test_find_tracking_info_should_return_correct_shipper_address
     @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response_with_shipper_address'))
     response = @carrier.find_tracking_info('927489999894450502838')
@@ -121,13 +129,18 @@ class FedExTest < MiniTest::Unit::TestCase
     assert_equal nil, response.shipper_address
   end
 
-  def test_find_tracking_info_should_gracefully_handle_missing_destination_information
-    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response_no_destination'))
-    result = @carrier.find_tracking_info('077973360403984')
-    assert_equal 'unknown', result.destination.city.downcase
-    assert_equal 'unknown', result.destination.state
-    assert_equal 'ZZ', result.destination.country.code(:alpha2).to_s
+  def test_find_tracking_info_should_return_correct_ship_time
+    @carrier.expects(:commit).returns(@tracking_response)
+    response = @carrier.find_tracking_info('927489999894450502838')
+    assert_equal Time.parse("2008-12-03T00:00:00").utc, response.ship_time
   end
+
+  def test_find_tracking_info_should_gracefully_handle_missing_ship_time
+    @carrier.expects(:commit).returns(xml_fixture('fedex/tracking_response_no_ship_time'))
+    response = @carrier.find_tracking_info('927489999894450502838')
+    assert_equal nil, response.ship_time
+  end
+
 
   def test_find_tracking_info_should_return_origin_address
     @carrier.expects(:commit).returns(@tracking_response)
