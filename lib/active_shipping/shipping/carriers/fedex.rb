@@ -346,7 +346,7 @@ module ActiveMerchant
         message = response_message(xml)
         
         if success
-          tracking_number, origin, destination, status, status_code, status_description, delivery_signature = nil
+          tracking_number, shipper_address, origin, destination, status, status_code, status_description, delivery_signature = nil
           shipment_events = []
 
           tracking_details = root_node.elements['TrackDetails']
@@ -367,6 +367,15 @@ module ActiveMerchant
                   :country =>     origin_node.get_text('CountryCode').to_s,
                   :province =>    origin_node.get_text('StateOrProvinceCode').to_s,
                   :city =>        origin_node.get_text('City').to_s
+            )
+          end
+
+          shipper_address_node = tracking_details.elements['ShipperAddress']
+          if shipper_address_node
+            shipper_address = Location.new(
+                  :country =>     shipper_address_node.get_text('CountryCode').to_s,
+                  :province =>    shipper_address_node.get_text('StateOrProvinceCode').to_s,
+                  :city =>        shipper_address_node.get_text('City').to_s
             )
           end
 
@@ -402,6 +411,7 @@ module ActiveMerchant
           :status_description => status_description,
           :delivery_signature => delivery_signature,
           :shipment_events => shipment_events,
+          :shipper_address => shipper_address,
           :origin => origin,
           :destination => destination,
           :tracking_number => tracking_number
