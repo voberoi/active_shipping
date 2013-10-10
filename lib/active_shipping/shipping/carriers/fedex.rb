@@ -346,7 +346,9 @@ module ActiveMerchant
         message = response_message(xml)
         
         if success
-          tracking_number, shipper_address, origin, destination, status, status_code, status_description, ship_time, delivery_signature = nil
+          tracking_number, shipper_address, origin, destination, status = nil
+          status_code, status_description, ship_time = nil
+          scheduled_delivery_time, actual_delivery_time, delivery_signature = nil
           shipment_events = []
 
           tracking_details = root_node.elements['TrackDetails']
@@ -370,6 +372,8 @@ module ActiveMerchant
             )
           end
 
+          destination = extract_destination(tracking_details)
+
           shipper_address_node = tracking_details.elements['ShipperAddress']
           if shipper_address_node
             shipper_address = Location.new(
@@ -379,11 +383,19 @@ module ActiveMerchant
             )
           end
 
-          destination = extract_destination(tracking_details)
-
           ship_timestamp_node = tracking_details.elements['ShipTimestamp']
           if ship_timestamp_node
-            ship_time = Time.parse(ship_timestamp_node.to_s)
+            ship_time = Time.parse(ship_timestamp_node.to_s).utc
+          end
+
+          actual_delivery_timestamp_node = tracking_details.elements['ActualDeliveryTimestamp']
+          if actual_delivery_timestamp_node
+            actual_delivery_time = Time.parse(actual_delivery_timestamp_node.to_s).utc
+          end
+
+          estimated_delivery_timestamp_node = tracking_details.elements['EstimatedDeliveryTimestamp']
+          if estimated_delivery_timestamp_node
+            scheduled_delivery_time = Time.parse(estimated_delivery_timestamp_node.to_s).utc
           end
           
           tracking_details.elements.each('Events') do |event|
@@ -415,6 +427,8 @@ module ActiveMerchant
           :status_code => status_code,
           :status_description => status_description,
           :ship_time => ship_time,
+          :scheduled_delivery_date => scheduled_delivery_time,
+          :actual_delivery_date => actual_delivery_time,
           :delivery_signature => delivery_signature,
           :shipment_events => shipment_events,
           :shipper_address => shipper_address,

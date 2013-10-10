@@ -9,6 +9,7 @@ module ActiveMerchant #:nodoc:
       attr_reader :status_description #string
       attr_reader :ship_time # time
       attr_reader :scheduled_delivery_date # time
+      attr_reader :actual_delivery_date # time
       attr_reader :delivery_signature #string
       attr_reader :tracking_number # string
       attr_reader :shipment_events # array of ShipmentEvents in chronological order
@@ -22,6 +23,7 @@ module ActiveMerchant #:nodoc:
         @status_description = options[:status_description]
         @ship_time = options[:ship_time]
         @scheduled_delivery_date = options[:scheduled_delivery_date]
+        @actual_delivery_date = options[:actual_delivery_date]
         @delivery_signature = options[:delivery_signature]
         @tracking_number = options[:tracking_number]
         @shipment_events = Array(options[:shipment_events])
