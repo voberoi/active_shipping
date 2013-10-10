@@ -48,7 +48,8 @@ module ActiveMerchant #:nodoc:
       alias_method(:exception_event, :latest_event)
       alias_method(:delivered?, :is_delivered?)
       alias_method(:exception?, :has_exception?)
-
+      alias_method(:scheduled_delivery_time, :scheduled_delivery_date)
+      alias_method(:actual_delivery_time, :actual_delivery_date)
     end
     
   end
