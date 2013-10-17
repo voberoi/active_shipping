@@ -510,6 +510,7 @@ module ActiveMerchant
             end
           end
           shipment_events = shipment_events.sort_by(&:time)
+          status = shipment_events.last.name.downcase.gsub("\s", "_").to_sym
         end
 
         TrackingResponse.new(success, message, Hash.from_xml(response),
@@ -518,7 +519,8 @@ module ActiveMerchant
           :request => last_request,
           :shipment_events => shipment_events,
           :destination => destination,
-          :tracking_number => tracking_number
+          :tracking_number => tracking_number,
+          :status => status
         )
       end
 
